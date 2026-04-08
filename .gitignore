@@ -1,4 +1,3 @@
-
 build/
 .dart_tool/
 .packages
@@ -6,3 +5,7 @@ build/
 .idea/
 .vscode/
 .DS_Store
+.metadata
+analysis_options.yaml
+wander_app_mvp.iml
+pubspec.lock
