@@ -36,19 +36,23 @@ Als Wanderer möchte ich Touren laden können, damit ich bestehende Routen nutze
 
 ## Issue #3: Offline-Karten
 
-**Title:** Als Nutzer möchte ich Offline-Karten sehen
+**Title:** Als Nutzer möchte ich Offline-Karten auswählen können
 
 **Description:**
-Als Nutzer möchte ich Offline-Karten sehen, damit ich auch ohne Internet unterwegs bin.
+Als Nutzer möchte ich Offline-Karten auswählen können, damit ich die richtigen Karten für meine Wanderung habe.
 
 **Acceptance Criteria:**
-- Karten können offline gespeichert werden
-- Karten werden angezeigt
+- Auswahlmenü für verschiedene Karten (Wanderkarte, Radkarte, Topografisch)
+- Karten herunterladen/aktualisieren mit Button
+- Karten anzeigen auf der Hauptkarte
 - Speicherung in MBTiles format
-- Karten laden bei App-Start
+- Karten-Status anzeigen (heruntergeladen, verfügbar)
+- Fehlerbehandlung bei fehlenden Karten
+- Karten-Größe und Speicherort anzeigen
 
 **Labels:** enhancement
 **Priority:** High
+
 
 
 ## Issue #4: Startseite
