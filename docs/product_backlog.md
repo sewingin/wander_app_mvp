@@ -39,7 +39,7 @@ Als Wanderer möchte ich Touren laden können, damit ich bestehende Routen nutze
 **Title:** Als Nutzer möchte ich Offline-Karten auswählen können
 
 **Description:**
-Als Nutzer möchte ich Offline-Karten auswählen können, damit ich die richtigen Karten für meine Wanderung habe.
+Als Nutzer möchte ich Offline-Karten auswählen können, damit ich die richtigen Karten für meine Wanderung habe. Besonders bei erstellten Routen soll es möglich sein, nur den benötigten Kartenausschnitt herunterzuladen.
 
 **Acceptance Criteria:**
 - Auswahlmenü für verschiedene Karten (Wanderkarte, Radkarte, Topografisch)
@@ -49,9 +49,13 @@ Als Nutzer möchte ich Offline-Karten auswählen können, damit ich die richtige
 - Karten-Status anzeigen (heruntergeladen, verfügbar)
 - Fehlerbehandlung bei fehlenden Karten
 - Karten-Größe und Speicherort anzeigen
+- Möglichkeit, **nur den Kartenausschnitt einer Route herunterzuladen**
+- Route-basierte Kartenausschnitte erstellen
+- Speicheroptimierung durch kleinere Ausschnitte
 
 **Labels:** enhancement
 **Priority:** High
+
 
 
 
