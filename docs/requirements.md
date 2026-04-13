@@ -13,3 +13,5 @@
 ## Nicht im MVP
 - Keine Social-Media Features.
 - Kein Login im ersten Schritt.
+- GPS Tracking
+- Fortgeschrittene Routnganalyse
