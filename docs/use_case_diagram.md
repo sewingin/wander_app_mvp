@@ -14,11 +14,11 @@
 6. Navigation offline
 
 ## Beziehungen:
--Nutzer → Route planen
--Nutzer → Tour laden
--Nutzer → Startseite anzeigen
--Nutzer → Tour speichern
--Nutzer → GPX importieren
--Nutzer → Navigation offline
--System → Navigation zwischen Screens
+- Nutzer → Route planen
+- Nutzer → Tour laden
+- Nutzer → Startseite anzeigen
+- Nutzer → Tour speichern
+- Nutzer → GPX importieren
+- Nutzer → Navigation offline
+- System → Navigation zwischen Screens
 
