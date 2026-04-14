@@ -20,15 +20,15 @@
 10. Benutzerprofile
 
 ## Beziehungen:
-Nutzer → Route planen
-Nutzer → Tour laden
-Nutzer → Startseite anzeigen
-Nutzer → Tour speichern
-Nutzer → GPX importieren
-Nutzer → Navigation offline
-Nutzer → Kartenausschnitte downloaden
-Nutzer → Social Features
-Nutzer → Fortgeschrittene Routinganalyse
-Nutzer → Benutzerprofile
-System → Navigation zwischen Screens
-OpenStreetMap → Daten liefern
+- Nutzer → Route planen
+- Nutzer → Tour laden
+- Nutzer → Startseite anzeigen
+- Nutzer → Tour speichern
+- Nutzer → GPX importieren
+- Nutzer → Navigation offline
+- Nutzer → Kartenausschnitte downloaden
+- Nutzer → Social Features
+- Nutzer → Fortgeschrittene Routinganalyse
+- Nutzer → Benutzerprofile
+- System → Navigation zwischen Screens
+- OpenStreetMap → Daten liefern
