@@ -5,20 +5,30 @@
 - System (App)
 - OpenStreetMap (Datenquelle)
 
-## Use Cases:
-1. Route planen (Wanderung, Radfahrt, Stadtforschung)
+## KERNFUNKTIONEN (MVP):
+1. Route planen
 2. Tour laden
 3. Startseite anzeigen
 4. Tour speichern
 5. GPX importieren
 6. Navigation offline
 
-## Beziehungen:
-- Nutzer → Route planen
-- Nutzer → Tour laden
-- Nutzer → Startseite anzeigen
-- Nutzer → Tour speichern
-- Nutzer → GPX importieren
-- Nutzer → Navigation offline
-- System → Navigation zwischen Screens
+## OPTIONALE FUNKTIONEN:
+7. Kartenausschnitte downloaden
+8. Social Features
+9. Fortgeschrittene Routinganalyse
+10. Benutzerprofile
 
+## Beziehungen:
+Nutzer → Route planen
+Nutzer → Tour laden
+Nutzer → Startseite anzeigen
+Nutzer → Tour speichern
+Nutzer → GPX importieren
+Nutzer → Navigation offline
+Nutzer → Kartenausschnitte downloaden
+Nutzer → Social Features
+Nutzer → Fortgeschrittene Routinganalyse
+Nutzer → Benutzerprofile
+System → Navigation zwischen Screens
+OpenStreetMap → Daten liefern
