@@ -1,17 +1,24 @@
-# Wander-App - Requirements Specification v1.0
-## Zielgruppe
-- Alle Altersgruppen, barrierefreie Bedienung.
-- Kein technischer Vorwissen nötig.
+# Wander App - Requirements Specification v1.0
 
-## Kernfunktionen
-1. Touren planen (A-B Routing)
-2. Radfahren & Wandern (Modi)
-3. Touren laden/importieren (GPX)
-4. Offline-Nutzung
-5. Einfache UI für alle Altersgruppen
+## Zielgruppe
+- Alle Altersgruppen
+- Barrierefreie Bedienung
+- Kein technisches Vorwissen nötig
+
+## Kernfunktionen (MVP)
+- Touren planen (A-B Routing)
+- Radfahren & Wandern (Modi)
+- Touren laden/importieren (GPX)
+- Offline-Nutzung
+- Einfache UI für alle Altersgruppen
 
 ## Nicht im MVP
-- Keine Social-Media Features.
-- Kein Login im ersten Schritt.
+- Keine Social-Media Features
+- Kein Login im ersten Schritt
 - GPS Tracking
-- Fortgeschrittene Routnganalyse
+- Fortgeschrittene Routinganalyse
+
+## Technische Anforderungen
+- Flutter Framework
+- Android & Web Support
+- Offline Datenbank
