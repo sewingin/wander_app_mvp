@@ -5,11 +5,12 @@ left to right direction
 actor "Wanderer" as user
 actor "GPS Sensor" as gps << System >>
 actor "Map Service / API" as api << System >>
+actor "File System" as fs << System >>
 
 rectangle "Wander App (MVP)" {
     usecase "Karte explorieren" as UC1
-    usecase "Route erstellen" as UC2
-    usecase "Wegpunkte hinzufügen" as UC2a
+    usecase "Route erstellen (mit Wegpunkten)" as UC2
+    usecase "Tour importieren (GPX/Datei)" as UC7
     usecase "Navigation starten" as UC3
     usecase "Tour speichern & verwalten" as UC4
     usecase "Points of Interest (POI) anzeigen" as UC5
@@ -19,21 +20,23 @@ rectangle "Wander App (MVP)" {
 ' Beziehungen des Wanderers
 user --> UC1
 user --> UC2
+user --> UC7
 user --> UC3
 user --> UC4
 user --> UC5
 
-' Erweiterung der Routen-Erstellung durch Wegpunkte
-UC2 <.. UC2a : <<extend>>
-note right of UC2a : User kann Zwischenstopps \nfestlegen
-
 ' System-Interaktionen
 UC1 <-- api : "Kartenmaterial laden"
 UC2 <-- api : "Berechnet Pfad via Waypoints"
+UC1 <-- fs : "Liest GPX Datei"
+UC7 <-- fs : "Greift auf Dateien zu"
 UC3 <-- gps : "Liefert Echtzeit-Koordinaten"
 UC6 -- gps : "Sensor Daten"
 UC5 <-- api : "POI Daten laden"
 
-' Verbindung zwischen Navigation und Tracking
+' Logik-Verknüpfungen
+UC7 ..> UC4 : <<include>> (Nach Import speichern)
+UC2 ..> UC4 : <<include>> (Nach Erstellung speichern)
 UC3 ..> UC6 : <<include>>
+
 @enduml
