@@ -1,135 +1,39 @@
 @startuml
-' =========================
-' CONTROLLER
-' =========================
-class AppController {
-  +initApp()
-  +setActiveComponent(name)
-  +handleBack()
-  +startNavigation(route)
-  +stopNavigation()
-  -activeComponent
+skinparam actorStyle awesome
+left to right direction
+
+actor "Wanderer" as user
+actor "GPS Sensor" as gps << System >>
+actor "Map Service / API" as api << System >>
+
+rectangle "Wander App (MVP)" {
+    usecase "Karte explorieren" as UC1
+    usecase "Route erstellen" as UC2
+    usecase "Wegpunkte hinzufügen" as UC2a
+    usecase "Navigation starten" as UC3
+    usecase "Tour speichern & verwalten" as UC4
+    usecase "Points of Interest (POI) anzeigen" as UC5
+    usecase "Aktuelle Position tracken" as UC6
 }
 
-' =========================
-' MAIN VIEW
-' =========================
-class MainView {
-  +render()
-  +showComponent(name)
-}
+' Beziehungen des Wanderers
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC4
+user --> UC5
 
-' =========================
-' COMPONENTS
-' =========================
+' Erweiterung der Routen-Erstellung durch Wegpunkte
+UC2 <.. UC2a : <<extend>>
+note right of UC2a : User kann Zwischenstopps \nfestlegen
 
-class HomeComponent {
-  +showMenu()
-  +onSelectMap()
-  +onSelectTours()
-  +onSelectProfile()
-  +onSelectSettings()
-}
+' System-Interaktionen
+UC1 <-- api : "Kartenmaterial laden"
+UC2 <-- api : "Berechnet Pfad via Waypoints"
+UC3 <-- gps : "Liefert Echtzeit-Koordinaten"
+UC6 -- gps : "Sensor Daten"
+UC5 <-- api : "POI Daten laden"
 
-class MapComponent {
-  +showMap()
-  +showRoute(route)
-  +showPOIs(pois)
-  +updatePosition(coord)
-  +onMapClick()
-  +onCreateRoute()
-  +hasUnsavedChanges(): boolean
-}
-
-class TourListComponent {
-  +showTours(tours)
-  +selectTour(tourId)
-}
-
-class ProfileComponent {
-  +showUserProfile(user)
-  +editProfile()
-}
-
-class SettingsComponent {
-  +showSettings()
-  +updateSettings()
-}
-
-class NavigationComponent {
-  +startNavigation(route)
-  +updateNavigation(state)
-  +stopNavigation()
-}
-
-' =========================
-' SERVICES
-' =========================
-
-class RoutingService {
-  +calculateRoute(start, end)
-  +loadRoute(routeId)
-}
-
-class POIService {
-  +getPOIs(area)
-}
-
-class TourService {
-  +getTours()
-  +getTourById(id)
-}
-
-class NavigationService {
-  +start(route)
-  +stop()
-  +updatePosition(coord)
-  +getState(): NavigationState
-}
-
-class TileService {
-  +loadTiles(x, y, z)
-}
-
-' =========================
-' STATE
-' =========================
-
-class NavigationState {
-  +isActive: boolean
-  +currentRoute
-  +currentPosition
-  +remainingDistance
-}
-
-' =========================
-' RELATIONSHIPS
-' =========================
-
-' Controller steuert MainView
-AppController "1" --> "1" MainView : updates UI
-
-' MainView enthält Komponenten (nur eine aktiv)
-MainView "1" --> "0..1" HomeComponent : displays
-MainView "1" --> "0..1" MapComponent : displays
-MainView "1" --> "0..1" TourListComponent : displays
-MainView "1" --> "0..1" ProfileComponent : displays
-MainView "1" --> "0..1" SettingsComponent : displays
-MainView "1" --> "0..1" NavigationComponent : displays
-
-' Controller nutzt Services
-AppController "1" --> "1" RoutingService : calculates routes
-AppController "1" --> "1" TourService : manages tours
-AppController "1" --> "1" NavigationService : controls navigation
-
-' Komponenten nutzen Services
-MapComponent "1" --> "1" POIService : loads POIs
-MapComponent "1" --> "1" RoutingService : requests routes
-MapComponent "1" --> "1" TileService : renders map tiles
-
-TourListComponent "1" --> "1" TourService : loads tours
-
-' Navigation
-NavigationService "1" --> "1" NavigationState : manages state
-NavigationComponent "1" --> "1" NavigationState : displays state
+' Verbindung zwischen Navigation und Tracking
+UC3 ..> UC6 : <<include>>
 @enduml
