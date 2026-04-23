@@ -1,1 +1,170 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+' ==========================================
+' 1. ENUMS
+' ==========================================
+enum NavMode {
+  IDLE
+  TRACKING
+  OFF_ROUTE
+  ARRIVED
+}
+
+enum SyncStatus {
+  LOCAL
+  SYNCING
+  CLOUD
+  ERROR
+}
+
+enum DownloadStatus {
+  IDLE
+  DOWNLOADING
+  SUCCESS
+  FAILED
+}
+
+enum DashboardTab {
+  MENU
+  PROFIL
+  PLANER
+  ARCHIV
+  DOWNLOAD
+}
+
+' ==========================================
+' 2. MODELS & REAKTIVE STATES
+' ==========================================
+class UserProfile {
+  + String id
+  + String name
+  + String email
+}
+
+class Tour {
+  + String id
+  + String title
+  + List<LatLng> waypoints
+  + double distance
+  + SyncStatus syncStatus
+}
+
+class NavigationState {
+  + NavMode mode
+  + LatLng? currentPos
+  + String? directionHint
+  + bool isActive
+}
+
+' ==========================================
+' 3. UI LAYER (Widgets & States)
+' ==========================================
+package "Presentation Layer" {
+  
+  class DashboardScreen <<StatefulWidget>> {
+    + createState(): _DashboardScreenState
+  }
+  
+  class _DashboardScreenState {
+    - DashboardTab _activeTab
+    + void changeTab(DashboardTab tab)
+    - Widget _mapTabToWidget(DashboardTab tab)
+  }
+
+  class ProfilScreen <<StatefulWidget>> {
+    + createState(): _ProfilScreenState
+  }
+  class _ProfilScreenState {
+    - UserProfile? tempUser
+    - bool isDirty
+  }
+
+  class PlanerScreen <<StatefulWidget>> {
+    + createState(): _PlanerScreenState
+  }
+  class _PlanerScreenState {
+    - List<LatLng> points
+    - bool isSaving
+  }
+
+  class ArchivScreen <<StatefulWidget>> {
+    + createState(): _ArchivScreenState
+  }
+  class _ArchivScreenState {
+    - List<Tour> cachedTours
+    - bool isLoading
+  }
+
+  class DownloadScreen <<StatefulWidget>> {
+    + createState(): _DownloadScreenState
+  }
+  class _DownloadScreenState {
+    - double currentProgress
+    - DownloadStatus status
+  }
+}
+
+' ==========================================
+' 4. LOGIC & DATA LAYER
+' ==========================================
+class NavigationProvider <<ChangeNotifier>> {
+  - NavigationState _state
+  - Tour? _activeTour
+  + void start(Tour t)
+}
+
+class AppRepository {
+  - LocalDatabase _db
+  - RemoteApi _api
+  - UserProfile? _currentUser
+  + Future<UserProfile> loadProfile()
+  + Future<void> saveTour(Tour t)
+}
+
+class GPSService {
+  + Stream<LatLng> get positionStream
+}
+
+' ==========================================
+' 5. ASSOZIATIONEN & KARDINALITÄTEN
+' ==========================================
+
+' Dashboard Steuerung über Enum statt Widget-Objekt
+DashboardScreen "1" *-- "1" _DashboardScreenState
+_DashboardScreenState "1" o-- "1" DashboardTab : steuert über >
+
+' Das Dashboard "kennt" die Ziel-Widgets (Dependency)
+_DashboardScreenState ..> ProfilScreen
+_DashboardScreenState ..> PlanerScreen
+_DashboardScreenState ..> ArchivScreen
+_DashboardScreenState ..> DownloadScreen
+
+' Widget-State Verknüpfungen
+ProfilScreen "1" *-- "1" _ProfilScreenState
+PlanerScreen "1" *-- "1" _PlanerScreenState
+ArchivScreen "1" *-- "1" _ArchivScreenState
+DownloadScreen "1" *-- "1" _DownloadScreenState
+
+' UserProfile ist fest im Repository verankert
+AppRepository "1" *-- "0..1" UserProfile : verwaltet >
+_ProfilScreenState "1" --> "1" AppRepository : nutzt >
+
+' Navigation & Hardware
+NavigationProvider "1" *-- "1" NavigationState : hält >
+NavigationProvider "1" o-- "1" GPSService : nutzt >
+NavigationProvider "1" *-- "0..1" Tour : aktiv >
+
+' Enums als Datentypen
+Tour "1" o-- "1" SyncStatus
+NavigationState "1" o-- "1" NavMode
+_DownloadScreenState "1" o-- "1" DownloadStatus
+
+' Daten-Infrastruktur
+AppRepository "1" *-- "1" LocalDatabase : persistiert >
+AppRepository "1" o-- "1" RemoteApi : synchronisiert >
+AppRepository "1" --> "0..*" Tour : verwaltet >
+
+@enduml
 
