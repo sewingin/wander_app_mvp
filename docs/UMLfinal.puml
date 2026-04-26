@@ -73,7 +73,7 @@ package "Presentation Layer" {
     - Widget _mapTabToWidget(HomeScreenTab tab)
   }
 
-  class ProfilScreen <<StatefulWidget>> {
+  class ProfilScreen extends StatefullWidget {
     + createState(): _ProfilScreenState
   }
   class _ProfilScreenState {
@@ -81,7 +81,7 @@ package "Presentation Layer" {
     - bool isDirty
   }
 
-  class PlanerScreen <<StatefulWidget>> {
+  class PlanerScreen extends StatefullWidget {
     + createState(): _PlanerScreenState
   }
   class _PlanerScreenState {
@@ -89,7 +89,7 @@ package "Presentation Layer" {
     - bool isSaving
   }
 
-  class ArchivScreen <<StatefulWidget>> {
+  class ArchivScreen extends StatefullWidget {
     + createState(): _ArchivScreenState
   }
   class _ArchivScreenState {
@@ -97,7 +97,7 @@ package "Presentation Layer" {
     - bool isLoading
   }
 
-  class DownloadScreen <<StatefulWidget>> {
+  class DownloadScreen extends StatefullWidget {
     + createState(): _DownloadScreenState
   }
   class _DownloadScreenState {
