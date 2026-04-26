@@ -77,11 +77,15 @@ package "Presentation Layer" {
     + createState(): _ProfilScreenState
   }
   class _ProfilScreenState {
-    - plannedTours: List<Tour>
-    - doneTours: List<Tour>
-    - _plannedTours(): void
-    - _doneTours(): void
-    - bool isDirty
+    - _currentFilter: TourFilter?
+  - _plannedTours: List<Tour>?
+  - _doneTours: List<Tour>?
+  - _plannedCount: int = 0
+  - _doneCount: int = 0
+  + initState(): void
+  - _loadCounts(): void
+  - _loadTourList(filter: TourFilter): void
+  + build(context: BuildContext): Widget
   }
 
   class PlanerScreen extends StatefullWidget {
