@@ -26,7 +26,7 @@ enum DownloadStatus {
   FAILED
 }
 
-enum DashboardTab {
+enum HomeScreenTab {
   MENU
   PROFIL
   PLANER
@@ -132,14 +132,14 @@ class GPSService {
 ' ==========================================
 
 ' Dashboard Steuerung über Enum statt Widget-Objekt
-DashboardScreen "1" *-- "1" _DashboardScreenState
-_DashboardScreenState "1" o-- "1" DashboardTab : steuert über >
+HomeScreen "1" *-- "1" _HomeScreenState
+_HomeScreenState "1" o-- "1" HomeScreenTab : steuert über >
 
 ' Das Dashboard "kennt" die Ziel-Widgets (Dependency)
-_DashboardScreenState ..> ProfilScreen
-_DashboardScreenState ..> PlanerScreen
-_DashboardScreenState ..> ArchivScreen
-_DashboardScreenState ..> DownloadScreen
+_HomeScreenState ..> ProfilScreen
+_HomeScreenState ..> PlanerScreen
+_HomeScreenState ..> ArchivScreen
+_HomeScreenState ..> DownloadScreen
 
 ' Widget-State Verknüpfungen
 ProfilScreen "1" *-- "1" _ProfilScreenState
