@@ -68,9 +68,9 @@ package "Presentation Layer" {
   }
   
   class _HomeScreenState {
-    - HomeScreenTab _activeTab
-    + void changeTab(HomeScreenTab tab)
-    - Widget _mapTabToWidget(HomeScreenTab tab)
+    - _activeTab: HomeScreenTab
+    + build(context: BuildContext): Widget
+    + changeTab(tab: HomeScreenTab): void
   }
 
   class ProfilScreen extends StatefullWidget {
