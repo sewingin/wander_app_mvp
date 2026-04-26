@@ -77,7 +77,10 @@ package "Presentation Layer" {
     + createState(): _ProfilScreenState
   }
   class _ProfilScreenState {
-    - UserProfile? tempUser
+    - plannedTours: List<Tour>
+    - doneTours: List<Tour>
+    - _plannedTours(): void
+    - _doneTours(): void
     - bool isDirty
   }
 
