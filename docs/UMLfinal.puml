@@ -62,15 +62,15 @@ class NavigationState {
 ' 3. UI LAYER (Widgets & States)
 ' ==========================================
 package "Presentation Layer" {
-  
-  class DashboardScreen <<StatefulWidget>> {
-    + createState(): _DashboardScreenState
+
+  class HomeScreen extends StatefullWidget{
+    + createState(): _HomeScreenState
   }
   
-  class _DashboardScreenState {
-    - DashboardTab _activeTab
-    + void changeTab(DashboardTab tab)
-    - Widget _mapTabToWidget(DashboardTab tab)
+  class _HomeScreenState {
+    - HomeScreenTab _activeTab
+    + void changeTab(HomeScreenTab tab)
+    - Widget _mapTabToWidget(HomeScreenTab tab)
   }
 
   class ProfilScreen <<StatefulWidget>> {
