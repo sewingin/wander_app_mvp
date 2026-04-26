@@ -44,12 +44,11 @@ class UserProfile {
 }
 
 class Tour {
-  + String id
-  + String title
-  + List<LatLng> waypoints
-  + double distance
-  + SyncStatus syncStatus
-}
+  + id: String
+  + title: String
+  + waypoints: List<LatLng>
+  + distance: double
+  + syncStatus: SyncStatus
 
 class NavigationState {
   + NavMode mode
