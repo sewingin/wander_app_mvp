@@ -46,10 +46,11 @@ class UserProfile {
 class Tour {
   + id: String
   + title: String
-  + waypoints: List<LatLng>
+  + userWaypoints: List<LatLng>
+  + routePoints: List<LatLng>
   + distance: double
   + syncStatus: SyncStatus
-
+}
 class NavigationState {
   + NavMode mode
   + LatLng? currentPos
@@ -68,6 +69,7 @@ package "Presentation Layer" {
   
   class _HomeScreenState {
     - _activeTab: HomeScreenTab
+    
     + build(context: BuildContext): Widget
     + changeTab(tab: HomeScreenTab): void
   }
@@ -76,37 +78,45 @@ package "Presentation Layer" {
     + createState(): _ProfilScreenState
   }
   class _ProfilScreenState {
-    - _currentFilter: TourFilter?
-  - _plannedTours: List<Tour>?
-  - _doneTours: List<Tour>?
-  - _plannedCount: int = 0
-  - _doneCount: int = 0
-  + initState(): void
-  - _loadCounts(): void
-  - _loadTourList(filter: TourFilter): void
-  + build(context: BuildContext): Widget
+    -_userProfil: UserProfil
+    -_loadProfil(): void
+    + initState(): void
+    + build(context: BuildContext): Widget
   }
 
-  class PlanerScreen extends StatefullWidget {
-    + createState(): _PlanerScreenState
+  class TourPlanerScreen extends StatefullWidget {
+    + initialTour: Tour?
+    + createState(): _TourPlanerScreenState
   }
-  class _PlanerScreenState {
-    - List<LatLng> points
-    - bool isSaving
+  class _TourPlanerScreenState {
+    - _waypoints: List<LatLng>
+    - isSaving: bool
+    + initState(): void
+    + build(context: BuildContext): Widget
   }
 
-  class ArchivScreen extends StatefullWidget {
+  class TourScreen extends StatefullWidget {
+    + initState(): void
+    + build(context: BuildContext): Widget
     + createState(): _ArchivScreenState
   }
-  class _ArchivScreenState {
-    - List<Tour> cachedTours
-    - bool isLoading
+  class _TourScreenState {
+    - _currentFilter: TourFilter?
+    - _plannedTours: List<Tour>?
+    - _doneTours: List<Tour>?
+    - _plannedCount: int = 0
+    - _doneCount: int = 0
+    - _loadCounts(): void
+    - _loadTourList(filter: TourFilter): void
+    + initState(): void
+    + build(context: BuildContext): Widget
   }
 
-  class DownloadScreen extends StatefullWidget {
-    + createState(): _DownloadScreenState
+  class NavigationScreen extends StatefullWidget {
+    + initialTour: Tour?
+    + createState(): _NavigationScreenState
   }
-  class _DownloadScreenState {
+  class _NavigationScreenState {
     - double currentProgress
     - DownloadStatus status
   }
@@ -142,20 +152,22 @@ HomeScreen "1" *-- "1" _HomeScreenState
 _HomeScreenState "1" o-- "1" HomeScreenTab : steuert über >
 
 ' Das Dashboard "kennt" die Ziel-Widgets (Dependency)
-_HomeScreenState ..> ProfilScreen
-_HomeScreenState ..> PlanerScreen
-_HomeScreenState ..> ArchivScreen
-_HomeScreenState ..> DownloadScreen
+_HomeScreenState "1" *-- "1" ProfilScreen
+_HomeScreenState "1" *-- "1" TourPlanerScreen
+_HomeScreenState "1" *-- "1" TourScreen
+_HomeScreenState "1" *-- "1" NavigationScreen
 
 ' Widget-State Verknüpfungen
 ProfilScreen "1" *-- "1" _ProfilScreenState
-PlanerScreen "1" *-- "1" _PlanerScreenState
-ArchivScreen "1" *-- "1" _ArchivScreenState
-DownloadScreen "1" *-- "1" _DownloadScreenState
+TourPlanerScreen "1" *-- "1" _TourPlanerScreenState
+TourScreen "1" *-- "1" _TourScreenState
+NavigationScreen "1" *-- "1" _NavigationScreenState
 
 ' UserProfile ist fest im Repository verankert
 AppRepository "1" *-- "0..1" UserProfile : verwaltet >
 _ProfilScreenState "1" --> "1" AppRepository : nutzt >
+_TourScreenState "1" --> "1" AppRepository : nutzt >
+_TourPlanerScreenState "1" --> "1" AppRepository : nutzt >
 
 ' Navigation & Hardware
 NavigationProvider "1" *-- "1" NavigationState : hält >
@@ -173,4 +185,3 @@ AppRepository "1" o-- "1" RemoteApi : synchronisiert >
 AppRepository "1" --> "0..*" Tour : verwaltet >
 
 @enduml
-
