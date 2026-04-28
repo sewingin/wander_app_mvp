@@ -5,19 +5,7 @@ skinparam linetype ortho
 ' ==========================================
 ' 1. ENUMS
 ' ==========================================
-enum NavMode {
-  IDLE
-  TRACKING
-  OFF_ROUTE
-  ARRIVED
-}
 
-enum SyncStatus {
-  LOCAL
-  SYNCING
-  CLOUD
-  ERROR
-}
 
 enum DownloadStatus {
   IDLE
@@ -26,148 +14,205 @@ enum DownloadStatus {
   FAILED
 }
 
-enum HomeScreenTab {
-  MENU
-  PROFIL
-  PLANER
-  ARCHIV
-  DOWNLOAD
-}
-
 ' ==========================================
 ' 2. MODELS & REAKTIVE STATES
 ' ==========================================
-class UserProfile {
-  + String id
-  + String name
-  + String email
-}
+package "Domain Models" {
 
-class Tour {
-  + id: String
-  + title: String
-  + userWaypoints: List<LatLng>
-  + routePoints: List<LatLng>
-  + distance: double
-  + syncStatus: SyncStatus
+    class UserProfile {
+      + String id
+      + String name
+      + String email
+    }
+    
+    class Tour {
+      + id: String
+      + title: String
+      + userWaypoints: List<LatLng>
+      + routePoints: List<LatLng>
+      + distance: double
+      + syncStatus: SyncStatus
+    }
+    
+    class NavigationState {
+      + NavMode mode
+      + LatLng? currentPos
+      + String? directionHint
+      + bool isActive
+    }
+    
+    enum NavMode {
+      IDLE
+      TRACKING
+      OFF_ROUTE
+      ARRIVED
+    }
+    
+    enum SyncStatus {
+      LOCAL
+      SYNCING
+      CLOUD
+      ERROR
+    }
 }
-class NavigationState {
-  + NavMode mode
-  + LatLng? currentPos
-  + String? directionHint
-  + bool isActive
-}
-
 ' ==========================================
 ' 3. UI LAYER (Widgets & States)
 ' ==========================================
 package "Presentation Layer" {
 
-  class HomeScreen extends StatefullWidget{
-    + createState(): _HomeScreenState
-  }
-  
-  class _HomeScreenState {
-    - _activeTab: HomeScreenTab
+   ' Das Framework (muss man nur einmal definieren)
+    abstract class StatefulWidget
+    abstract class "State<T>" as State
     
-    + build(context: BuildContext): Widget
-    + changeTab(tab: HomeScreenTab): void
-  }
+    
+    enum HomeScreenTab {
+      MENU
+      PROFIL
+      PLANER
+      ARCHIV
+      DOWNLOAD
+    }
 
-  class ProfilScreen extends StatefullWidget {
-    + createState(): _ProfilScreenState
-  }
-  class _ProfilScreenState {
-    -_userProfil: UserProfil
-    -_loadProfil(): void
-    + initState(): void
-    + build(context: BuildContext): Widget
-  }
+    class HomeScreen extends StatefulWidget{
+        + createState(): _HomeScreenState
+    }
+    
+    class _HomeScreenState extends State<HomeScreen>{
+        - _activeTab: HomeScreenTab
+        + build(context: BuildContext): Widget
+        + changeTab(tab: HomeScreenTab): void
+    }
+    
+    class ProfilScreen extends StatefulWidget {
+        + createState(): _ProfilScreenState
+    }
+    class _ProfilScreenState extends State<ProfilScreen>{
+        -_userProfil: UserProfil
+        -_loadProfil(): void
+        + initState(): void
+        + build(context: BuildContext): Widget
+    }
+    
+    class TourPlanerScreen extends StatefulWidget {
+        + initialTour: Tour?
+        + createState(): _TourPlanerScreenState
+    }
+    
+    class _TourPlanerScreenState extends State<TourPlanerScreen>{
+        - _waypoints: List<LatLng>
+        - isSaving: bool
+        + initState(): void
+        + build(context: BuildContext): Widget
+    }
+    
+    class TourScreen extends StatefulWidget {
+        + initState(): void
+        + build(context: BuildContext): Widget
+        + createState(): _ArchivScreenState
+    }
+    
+    class _TourScreenState extends State<TourScreen>{
+        - _currentFilter: TourFilter?
+        - _plannedTours: List<Tour>?
+        - _doneTours: List<Tour>?
+        - _plannedCount: int = 0
+        - _doneCount: int = 0
+        - _loadCounts(): void
+        - _loadTourList(filter: TourFilter): void
+        + initState(): void
+        + build(context: BuildContext): Widget
+    }
+    
+    class NavigationScreen extends StatefulWidget {
+        + initialTour: Tour?
+        + createState(): _NavigationScreenState
+    }
+    
+    class _NavigationScreenState extends State<NavigationScreen>{
+        - double currentProgress
+        - DownloadStatus status
+    }
 
-  class TourPlanerScreen extends StatefullWidget {
-    + initialTour: Tour?
-    + createState(): _TourPlanerScreenState
-  }
-  class _TourPlanerScreenState {
-    - _waypoints: List<LatLng>
-    - isSaving: bool
-    + initState(): void
-    + build(context: BuildContext): Widget
-  }
-
-  class TourScreen extends StatefullWidget {
-    + initState(): void
-    + build(context: BuildContext): Widget
-    + createState(): _ArchivScreenState
-  }
-  class _TourScreenState {
-    - _currentFilter: TourFilter?
-    - _plannedTours: List<Tour>?
-    - _doneTours: List<Tour>?
-    - _plannedCount: int = 0
-    - _doneCount: int = 0
-    - _loadCounts(): void
-    - _loadTourList(filter: TourFilter): void
-    + initState(): void
-    + build(context: BuildContext): Widget
-  }
-
-  class NavigationScreen extends StatefullWidget {
-    + initialTour: Tour?
-    + createState(): _NavigationScreenState
-  }
-  class _NavigationScreenState {
-    - double currentProgress
-    - DownloadStatus status
-  }
 }
 
 ' ==========================================
 ' 4. LOGIC & DATA LAYER
 ' ==========================================
-class NavigationProvider <<ChangeNotifier>> {
-  - NavigationState _state
-  - Tour? _activeTour
-  + void start(Tour t)
+
+package "Logic / Providers" {
+    class NavigationProvider <<ChangeNotifier>> {
+      - activeTour: 
+      - _state: NavigationState
+      + start(Tour t)
+    }
 }
 
-class AppRepository {
-  - LocalDatabase _db
-  - RemoteApi _api
-  - UserProfile? _currentUser
-  + Future<UserProfile> loadProfile()
-  + Future<void> saveTour(Tour t)
-}
+' --- INFRASTRUCTURE / DATA ---
+package "Infrastructure & Data" {
 
-class GPSService {
-  + Stream<LatLng> get positionStream
+    class AppRepository <<Singleton>> {
+        - _db: LocalDatabase
+        - _api: RemoteApi
+        - _currentUser: UserProfile?
+        ' Profil-Methoden
+        + isLoggedIn(): bool
+        + loadProfile(): Future<UserProfile>
+        + saveProfile(profile: UserProfile): Future<void>
+        ' Lazy-Loading Methoden (nur Counts)
+        + getPlannedToursCount(): Future<int>
+        + getDoneToursCount(): Future<int>
+        ' Listen-Methoden
+        + loadTours(filter: TourFilter): Future<List<Tour>>
+        ' Speicher-Methoden
+        + saveTour(t: Tour): Future<void>
+        + deleteTour(id: String): Future<void>
+    }
+    
+    class LocalDatabase{
+    
+    }
+    
+    class RemoteApi{
+    }
+    
+    class GPSService {
+        + Stream<LatLng> get positionStream
+    }
 }
-
 ' ==========================================
 ' 5. ASSOZIATIONEN & KARDINALITÄTEN
 ' ==========================================
 
+HomeScreen .down.> _HomeScreenState : <<creates>>
+_HomeScreenState -up-> HomeScreen : <<accesses via 'widget'>>
 ' Dashboard Steuerung über Enum statt Widget-Objekt
-HomeScreen "1" *-- "1" _HomeScreenState
-_HomeScreenState "1" o-- "1" HomeScreenTab : steuert über >
+_HomeScreenState -right-> HomeScreenTab : "nutzt Typ>"
 
-' Das Dashboard "kennt" die Ziel-Widgets (Dependency)
-_HomeScreenState "1" *-- "1" ProfilScreen
-_HomeScreenState "1" *-- "1" TourPlanerScreen
-_HomeScreenState "1" *-- "1" TourScreen
-_HomeScreenState "1" *-- "1" NavigationScreen
+' Das Dashboard "zeigt" die Ziel-Widgets (Dependency )
+_HomeScreenState .down.> ProfilScreen : <<display>>
+_HomeScreenState .down.> TourPlanerScreen : <<display>>
+_HomeScreenState .down.> TourScreen : <<display>>
+_HomeScreenState .down.> NavigationScreen : <<display>>
 
 ' Widget-State Verknüpfungen
-ProfilScreen "1" *-- "1" _ProfilScreenState
-TourPlanerScreen "1" *-- "1" _TourPlanerScreenState
-TourScreen "1" *-- "1" _TourScreenState
-NavigationScreen "1" *-- "1" _NavigationScreenState
+ProfilScreen .down.> _ProfilScreenState : <<creates>>
+TourPlanerScreen .down.> _TourPlanerScreenState : <<creates>>
+TourScreen .down.> _TourScreenState : <<creates>>
+NavigationScreen .down.> _NavigationScreenState : <<creates>>
+
+_ProfilScreenState -up-> ProfilScreen : <<accesses via 'widget'>>
+_TourPlanerScreenState -up-> TourPlanerScreen : <<accesses via 'widget'>>
+_TourScreenState -up-> TourScreen : <<accesses via 'widget'>>
+_NavigationScreenState -up-> NavigationScreen : <<accesses via 'widget'>>
 
 ' UserProfile ist fest im Repository verankert
-AppRepository "1" *-- "0..1" UserProfile : verwaltet >
-_ProfilScreenState "1" --> "1" AppRepository : nutzt >
-_TourScreenState "1" --> "1" AppRepository : nutzt >
-_TourPlanerScreenState "1" --> "1" AppRepository : nutzt >
+' Das Repository verwaltet das aktuelle Profil (0..1 bedeutet: kann am Anfang null sein)
+AppRepository "1" *-- "0..1" UserProfile : "aktueller User"
+
+ ' Die States nutzen das Repository, um Daten zu laden/speichern
+_ProfilScreenState ..> AppRepository : <<use>>
+_TourScreenState ..> AppRepository : <<use>>
+_TourPlanerScreenState ..> AppRepository : <<use>>
 
 ' Navigation & Hardware
 NavigationProvider "1" *-- "1" NavigationState : hält >
