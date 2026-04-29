@@ -18,11 +18,14 @@ enum DownloadStatus {
 ' 2. MODELS & REAKTIVE STATES
 ' ==========================================
 package "Domain Models" {
-
-    class UserProfile {
+    class UserProfile <<Singleton>>{
       + String id
       + String name
       + String email
+      - UserProfile()
+      + {static} UserProfile get instance
+      + {static} Future<UserProfile> loadOrRegister()
+      + Future<void> save()
     }
     
     class Tour {
@@ -60,11 +63,6 @@ package "Domain Models" {
 ' ==========================================
 package "Presentation Layer" {
 
-   ' Das Framework (muss man nur einmal definieren)
-    abstract class StatefulWidget
-    abstract class "State<T>" as State
-    
-    
     enum HomeScreenTab {
       MENU
       PROFIL
@@ -73,80 +71,94 @@ package "Presentation Layer" {
       DOWNLOAD
     }
 
-    class HomeScreen extends StatefulWidget{
-        + createState(): _HomeScreenState
-    }
-    
-    class _HomeScreenState extends State<HomeScreen>{
-        - _activeTab: HomeScreenTab
-        + build(context: BuildContext): Widget
-        + changeTab(tab: HomeScreenTab): void
-    }
-    
-    class ProfilScreen extends StatefulWidget {
-        + createState(): _ProfilScreenState
-    }
-    class _ProfilScreenState extends State<ProfilScreen>{
-        -_userProfil: UserProfil
-        -_loadProfil(): void
-        + initState(): void
-        + build(context: BuildContext): Widget
-    }
-    
-    class TourPlanerScreen extends StatefulWidget {
-        + initialTour: Tour?
-        + createState(): _TourPlanerScreenState
-    }
-    
-    class _TourPlanerScreenState extends State<TourPlanerScreen>{
-        - _waypoints: List<LatLng>
-        - isSaving: bool
-        + initState(): void
-        + build(context: BuildContext): Widget
-    }
-    
-    class TourScreen extends StatefulWidget {
-        + initState(): void
-        + build(context: BuildContext): Widget
-        + createState(): _ArchivScreenState
-    }
-    
-    class _TourScreenState extends State<TourScreen>{
-        - _currentFilter: TourFilter?
-        - _plannedTours: List<Tour>?
-        - _doneTours: List<Tour>?
-        - _plannedCount: int = 0
-        - _doneCount: int = 0
-        - _loadCounts(): void
-        - _loadTourList(filter: TourFilter): void
-        + initState(): void
-        + build(context: BuildContext): Widget
-    }
-    
-    class NavigationScreen extends StatefulWidget {
-        + initialTour: Tour?
-        + createState(): _NavigationScreenState
-    }
-    
-    class _NavigationScreenState extends State<NavigationScreen>{
-        - double currentProgress
-        - DownloadStatus status
-    }
+   ' Das Framework (muss man nur einmal definieren)
+    abstract class StatefulWidget
+    abstract class "State<T>" as State
 
+    class AppNavigation <<Root>> {
+        + decideStartScreen()
+    }
+    
+  class HomeScreen extends StatefulWidget{
+    + createState(): _HomeScreenState
+  }
+  
+  class _HomeScreenState extends State<HomeScreen>{
+    - _activeTab: HomeScreenTab
+    
+    + build(context: BuildContext): Widget
+    + changeTab(tab: HomeScreenTab): void
+  }
+
+  class ProfilScreen extends StatefulWidget {
+    + createState(): _ProfilScreenState
+  }
+  class _ProfilScreenState extends State<ProfilScreen>{
+    -_userProfil: UserProfil
+    -_loadProfil(): void
+    + initState(): void
+    + build(context: BuildContext): Widget
+  }
+
+  class TourPlanerScreen extends StatefulWidget {
+    + initialTour: Tour?
+    + createState(): _TourPlanerScreenState
+  }
+  
+  class _TourPlanerScreenState extends State<TourPlanerScreen>{
+    - _waypoints: List<LatLng>
+    - isSaving: bool
+    + initState(): void
+    + build(context: BuildContext): Widget
+  }
+
+  class TourScreen extends StatefulWidget {
+    + initState(): void
+    + build(context: BuildContext): Widget
+    + createState(): _ArchivScreenState
+  }
+  
+  class _TourScreenState extends State<TourScreen>{
+    - _currentFilter: TourFilter?
+    - _plannedTours: List<Tour>?
+    - _doneTours: List<Tour>?
+    - _plannedCount: int = 0
+    - _doneCount: int = 0
+    - _loadCounts(): void
+    - _loadTourList(filter: TourFilter): void
+    + initState(): void
+    + build(context: BuildContext): Widget
+  }
+
+  class NavigationScreen extends StatefulWidget {
+    + initialTour: Tour?
+    + createState(): _NavigationScreenState
+  }
+  
+  class _NavigationScreenState extends State<NavigationScreen>{
+    - double currentProgress
+    - DownloadStatus status
+  }
 }
 
 ' ==========================================
 ' 4. LOGIC & DATA LAYER
 ' ==========================================
 
-package "Logic / Providers" {
-    class NavigationProvider <<ChangeNotifier>> {
-      - activeTour: 
-      - _state: NavigationState
-      + start(Tour t)
+ class AuthManager {
+        - _currentUser: UserProfile [0..1]
+        + isLoggedIn(): Boolean
+        + loadFromStorage(): void
+        + login(credentials): void
+        + logout(): void
+        + getCurrentUser(): UserProfile?
     }
-}
 
+class NavigationProvider <<ChangeNotifier>> {
+  - NavigationState _state
+  - Tour? _activeTour
+  + void start(Tour t)
+}
 ' --- INFRASTRUCTURE / DATA ---
 package "Infrastructure & Data" {
 
@@ -155,7 +167,6 @@ package "Infrastructure & Data" {
         - _api: RemoteApi
         - _currentUser: UserProfile?
         ' Profil-Methoden
-        + isLoggedIn(): bool
         + loadProfile(): Future<UserProfile>
         + saveProfile(profile: UserProfile): Future<void>
         ' Lazy-Loading Methoden (nur Counts)
@@ -169,7 +180,9 @@ package "Infrastructure & Data" {
     }
     
     class LocalDatabase{
-    
+        + saveUser(user: UserProfile): void
+        + fetchUser(): UserProfile?
+        + clear(): void
     }
     
     class RemoteApi{
@@ -182,6 +195,11 @@ package "Infrastructure & Data" {
 ' ==========================================
 ' 5. ASSOZIATIONEN & KARDINALITÄTEN
 ' ==========================================
+AuthManager o-- UserProfile : "verwaltet current"
+AuthManager ..> LocalDatabase : "nutzt für Persistenz"
+AppNavigation --> AuthManager : "prüft Status"
+HomeScreen --> AuthManager : "liest Daten für 'Hallo...'"
+LoginScreen --> AuthManager : "ruft login() auf"
 
 HomeScreen .down.> _HomeScreenState : <<creates>>
 _HomeScreenState -up-> HomeScreen : <<accesses via 'widget'>>
@@ -229,4 +247,6 @@ AppRepository "1" *-- "1" LocalDatabase : persistiert >
 AppRepository "1" o-- "1" RemoteApi : synchronisiert >
 AppRepository "1" --> "0..*" Tour : verwaltet >
 
-@enduml
+@enduml      DOWNLOAD
+    }
+
