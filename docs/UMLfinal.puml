@@ -6,7 +6,6 @@ skinparam linetype ortho
 ' 1. ENUMS
 ' ==========================================
 
-
 enum DownloadStatus {
   IDLE
   DOWNLOADING
@@ -19,13 +18,14 @@ enum DownloadStatus {
 ' ==========================================
 package "Domain Models" {
     class UserProfile <<Singleton>>{
-      + String id
-      + String name
-      + String email
+      + id: String
+      + name: String
+      + email: String
       - UserProfile()
-      + {static} UserProfile get instance
-      + {static} Future<UserProfile> loadOrRegister()
-      + Future<void> save()
+      + {static} getInstance: UserProfile?
+      + {static} loadFromStorage(): Future<void>
+      + {static} createInitial(String name, String email): void
+      + save(): Future<void>
     }
     
     class Tour {
@@ -78,14 +78,24 @@ package "Presentation Layer" {
     class AppNavigation <<Root>> {
         + decideStartScreen()
     }
-    
-  class HomeScreen extends StatefulWidget{
-    + createState(): _HomeScreenState
-  }
+    class LoginScreen extends StatefulWidget {
+       + createState(): _LoginScreenState
+   }
+   
+   class _LoginScreenState extends State<LoginScreen>{
+    - nameController: TextEditingController 
+    - emailController TextEditingController 
+    + onRegisterPressed(): void
+    + initState(): void
+    + build(context: BuildContext): Widget
+   }
+   
+   class HomeScreen extends StatefulWidget{
+     + createState(): _HomeScreenState
+   }
   
   class _HomeScreenState extends State<HomeScreen>{
     - _activeTab: HomeScreenTab
-    
     + build(context: BuildContext): Widget
     + changeTab(tab: HomeScreenTab): void
   }
@@ -139,20 +149,12 @@ package "Presentation Layer" {
     - double currentProgress
     - DownloadStatus status
   }
+  
 }
 
 ' ==========================================
 ' 4. LOGIC & DATA LAYER
 ' ==========================================
-
- class AuthManager {
-        - _currentUser: UserProfile [0..1]
-        + isLoggedIn(): Boolean
-        + loadFromStorage(): void
-        + login(credentials): void
-        + logout(): void
-        + getCurrentUser(): UserProfile?
-    }
 
 class NavigationProvider <<ChangeNotifier>> {
   - NavigationState _state
@@ -195,11 +197,6 @@ package "Infrastructure & Data" {
 ' ==========================================
 ' 5. ASSOZIATIONEN & KARDINALITÄTEN
 ' ==========================================
-AuthManager o-- UserProfile : "verwaltet current"
-AuthManager ..> LocalDatabase : "nutzt für Persistenz"
-AppNavigation --> AuthManager : "prüft Status"
-HomeScreen --> AuthManager : "liest Daten für 'Hallo...'"
-LoginScreen --> AuthManager : "ruft login() auf"
 
 HomeScreen .down.> _HomeScreenState : <<creates>>
 _HomeScreenState -up-> HomeScreen : <<accesses via 'widget'>>
@@ -211,17 +208,19 @@ _HomeScreenState .down.> ProfilScreen : <<display>>
 _HomeScreenState .down.> TourPlanerScreen : <<display>>
 _HomeScreenState .down.> TourScreen : <<display>>
 _HomeScreenState .down.> NavigationScreen : <<display>>
+_HomeScreenState .down.> LoginScreen : <<display>>
 
 ' Widget-State Verknüpfungen
 ProfilScreen .down.> _ProfilScreenState : <<creates>>
 TourPlanerScreen .down.> _TourPlanerScreenState : <<creates>>
 TourScreen .down.> _TourScreenState : <<creates>>
 NavigationScreen .down.> _NavigationScreenState : <<creates>>
-
+LoginScreen .down.> _LoginScreenState : <<creates>>
 _ProfilScreenState -up-> ProfilScreen : <<accesses via 'widget'>>
 _TourPlanerScreenState -up-> TourPlanerScreen : <<accesses via 'widget'>>
 _TourScreenState -up-> TourScreen : <<accesses via 'widget'>>
 _NavigationScreenState -up-> NavigationScreen : <<accesses via 'widget'>>
+_LoginScreenState -up-> LoginScreen : <<accesses via 'widget'>>
 
 ' UserProfile ist fest im Repository verankert
 ' Das Repository verwaltet das aktuelle Profil (0..1 bedeutet: kann am Anfang null sein)
@@ -249,4 +248,6 @@ AppRepository "1" --> "0..*" Tour : verwaltet >
 
 @enduml      DOWNLOAD
     }
+
+
 
