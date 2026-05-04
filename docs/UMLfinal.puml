@@ -82,7 +82,7 @@ package "Presentation Layer" {
        + createState(): _LoginScreenState
    }
    
-   class _LoginScreenState extends State<LoginScreen>{
+   class _LoginScreeState extends State<LoginScreen>{
     - nameController: TextEditingController 
     - emailController TextEditingController 
     + onRegisterPressed(): void
@@ -224,11 +224,13 @@ _LoginScreenState -up-> LoginScreen : <<accesses via 'widget'>>
 
 ' UserProfile ist fest im Repository verankert
 ' Das Repository verwaltet das aktuelle Profil (0..1 bedeutet: kann am Anfang null sein)
-AppRepository "1" *-- "0..1" UserProfile : "aktueller User"
+_ProfilScreenState "1" --> "0..1" UserProfile : "aktueller User"
 
  ' Die States nutzen das Repository, um Daten zu laden/speichern
 _ProfilScreenState ..> AppRepository : <<use>>
 _TourScreenState ..> AppRepository : <<use>>
+_TourScreenState "1" --> "0..*" Tour: zeigt an > 
+_NavigationScreenState "1" --> "0..*" Tour: navigiert > 
 _TourPlanerScreenState ..> AppRepository : <<use>>
 
 ' Navigation & Hardware
@@ -244,9 +246,8 @@ _DownloadScreenState "1" o-- "1" DownloadStatus
 ' Daten-Infrastruktur
 AppRepository "1" *-- "1" LocalDatabase : persistiert >
 AppRepository "1" o-- "1" RemoteApi : synchronisiert >
-AppRepository "1" --> "0..*" Tour : verwaltet >
 
-@enduml      DOWNLOAD
+@enduml      
     }
 
 
