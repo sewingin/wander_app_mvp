@@ -38,10 +38,10 @@ package "Domain Models" {
     }
     
     class NavigationState {
-      + NavMode mode
-      + LatLng? currentPos
-      + String? directionHint
-      + bool isActive
+      + mode: NavMode
+      + currentPos: LatLng? 
+      + directionHint: String? 
+      + isActive: bool 
     }
     
     enum NavMode {
@@ -75,9 +75,6 @@ package "Presentation Layer" {
     abstract class StatefulWidget
     abstract class "State<T>" as State
 
-    class AppNavigation <<Root>> {
-        + decideStartScreen()
-    }
     class LoginScreen extends StatefulWidget {
        + createState(): _LoginScreenState
    }
@@ -145,29 +142,28 @@ package "Presentation Layer" {
     + createState(): _NavigationScreenState
   }
   
-  class _NavigationScreenState extends State<NavigationScreen>{
+  class _NavigationScreenState extends NavigationScreen{
     - double currentProgress
     - DownloadStatus status
   }
-  
 }
 
 ' ==========================================
 ' 4. LOGIC & DATA LAYER
 ' ==========================================
 
-class NavigationProvider <<ChangeNotifier>> {
-  - NavigationState _state
-  - Tour? _activeTour
+class NavigationProvider <<Singleton>> <<ChangeNotifier>> extends ChangeNotifier{
+  - _state: NavigationState 
+  - _activeTour: Tour? 
   + void start(Tour t)
 }
+
 ' --- INFRASTRUCTURE / DATA ---
 package "Infrastructure & Data" {
 
     class AppRepository <<Singleton>> {
         - _db: LocalDatabase
         - _api: RemoteApi
-        - _currentUser: UserProfile?
         ' Profil-Methoden
         + loadProfile(): Future<UserProfile>
         + saveProfile(profile: UserProfile): Future<void>
@@ -194,6 +190,7 @@ package "Infrastructure & Data" {
         + Stream<LatLng> get positionStream
     }
 }
+
 ' ==========================================
 ' 5. ASSOZIATIONEN & KARDINALITÄTEN
 ' ==========================================
@@ -221,22 +218,21 @@ _TourPlanerScreenState -up-> TourPlanerScreen : <<accesses via 'widget'>>
 _TourScreenState -up-> TourScreen : <<accesses via 'widget'>>
 _NavigationScreenState -up-> NavigationScreen : <<accesses via 'widget'>>
 _LoginScreenState -up-> LoginScreen : <<accesses via 'widget'>>
-
+_TourPlanerScreenState --> Tour : "erstellt"
 ' UserProfile ist fest im Repository verankert
 ' Das Repository verwaltet das aktuelle Profil (0..1 bedeutet: kann am Anfang null sein)
-_ProfilScreenState "1" --> "0..1" UserProfile : "aktueller User"
+AppRepository "1" *-- "0..1" UserProfile : "aktueller User"
 
  ' Die States nutzen das Repository, um Daten zu laden/speichern
 _ProfilScreenState ..> AppRepository : <<use>>
 _TourScreenState ..> AppRepository : <<use>>
-_TourScreenState "1" --> "0..*" Tour: zeigt an > 
-_NavigationScreenState "1" --> "0..*" Tour: navigiert > 
 _TourPlanerScreenState ..> AppRepository : <<use>>
+_TourScreenState "1" --> "0..*" Tour: navigiert > 
 
 ' Navigation & Hardware
 NavigationProvider "1" *-- "1" NavigationState : hält >
-NavigationProvider "1" o-- "1" GPSService : nutzt >
-NavigationProvider "1" *-- "0..1" Tour : aktiv >
+NavigationProvider "1" *-- "1" GPSService : nutzt >
+NavigationProvider "1" --> "0..1" Tour : aktiv >
 
 ' Enums als Datentypen
 Tour "1" o-- "1" SyncStatus
@@ -246,9 +242,9 @@ _DownloadScreenState "1" o-- "1" DownloadStatus
 ' Daten-Infrastruktur
 AppRepository "1" *-- "1" LocalDatabase : persistiert >
 AppRepository "1" o-- "1" RemoteApi : synchronisiert >
+AppRepository "1" --> "0..*" Tour : verwaltet >
 
-@enduml      
-    }
-
+@enduml
+}
 
 
