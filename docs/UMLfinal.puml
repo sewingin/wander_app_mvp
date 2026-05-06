@@ -37,13 +37,6 @@ package "Domain Models" {
       + syncStatus: SyncStatus
     }
     
-    class NavigationState {
-      + mode: NavMode
-      + currentPos: LatLng? 
-      + directionHint: String? 
-      + isActive: bool 
-    }
-    
     enum NavMode {
       IDLE
       TRACKING
@@ -79,7 +72,7 @@ package "Presentation Layer" {
        + createState(): _LoginScreenState
    }
    
-   class _LoginScreeState extends State<LoginScreen>{
+   class _LoginScreenState extends State<LoginScreen>{
     - nameController: TextEditingController 
     - emailController TextEditingController 
     + onRegisterPressed(): void
@@ -143,8 +136,11 @@ package "Presentation Layer" {
   }
   
   class _NavigationScreenState extends NavigationScreen{
-    - double currentProgress
-    - DownloadStatus status
+  -  _currentProgress: double
+  --
+  + startTour(t: Tour): void
+  + startTracking(): void
+  + stop(): void
   }
 }
 
@@ -152,10 +148,33 @@ package "Presentation Layer" {
 ' 4. LOGIC & DATA LAYER
 ' ==========================================
 
-class NavigationProvider <<Singleton>> <<ChangeNotifier>> extends ChangeNotifier{
-  - _state: NavigationState 
-  - _activeTour: Tour? 
-  + void start(Tour t)
+package "Logic/Provider"{
+class NavigationProvider <<Singleton>> <<ChangeNotifier>> extends ChangeNotifier {
+  ' State-Variablen (vorher in NavigationState)
+  - _currentPos : LatLng [0..1]
+  - _mode : NavMode = IDLE
+  - _directionHint : String [0..1]
+  - _isActive : Boolean = false 
+  ' Aktive Tour Beziehung wird grafisch dargestellt
+  --
+  ' Konstruktor
+  - NavigationProvider()
+  --
+  ' Getter (Read-Only Zugriff für UI)
+  + getCurrentPos() : LatLng?
+  + getMode() : NavMode
+  + getDirectionHint() : String?
+  + isActive() : Boolean
+  --
+  ' Logik-Methoden
+  + startNavigation(t : Tour): void
+  + startTracking(): void
+  + stop(): void
+  - _handlePositionUpdate(): void
+  ' Interner Callback für Stream
+  - _updatePosition(pos : LatLng): void
++ {static} void destroyInstance()
+}
 }
 
 ' --- INFRASTRUCTURE / DATA ---
@@ -187,7 +206,12 @@ package "Infrastructure & Data" {
     }
     
     class GPSService {
-        + Stream<LatLng> get positionStream
+        ' Liefert die Rohdaten vom Chip
+        + getPositionStream(): Stream<LatLng>
+        ' Prüft, ob GPS überhaupt an ist
+        + isGPSEnabled(): Future<bool>
+        ' Wichtig für deine Background-Anforderung
+        + enableBackgroundLocation(bool enable): void
     }
 }
 
@@ -230,13 +254,13 @@ _TourPlanerScreenState ..> AppRepository : <<use>>
 _TourScreenState "1" --> "0..*" Tour: navigiert > 
 
 ' Navigation & Hardware
-NavigationProvider "1" *-- "1" NavigationState : hält >
 NavigationProvider "1" *-- "1" GPSService : nutzt >
-NavigationProvider "1" --> "0..1" Tour : aktiv >
+NavigationProvider "1" o-- "0..1" Tour : _activeTour
+_NavigationScreenState ..> NavigationProvider : <<use / observe>>
 
 ' Enums als Datentypen
 Tour "1" o-- "1" SyncStatus
-NavigationState "1" o-- "1" NavMode
+NavigationProvider "1" o-- "1" NavMode
 _DownloadScreenState "1" o-- "1" DownloadStatus
 
 ' Daten-Infrastruktur
@@ -246,5 +270,3 @@ AppRepository "1" --> "0..*" Tour : verwaltet >
 
 @enduml
 }
-
-
