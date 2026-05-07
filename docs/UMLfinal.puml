@@ -1,17 +1,36 @@
 @startuml
+' --- BLUEGRAY STYLE START ---
+skinparam backgroundColor #FDFDFD
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
+skinparam DefaultFontColor #334455
 
-' ==========================================
-' 1. ENUMS
-' ==========================================
-
-enum DownloadStatus {
-  IDLE
-  DOWNLOADING
-  SUCCESS
-  FAILED
+skinparam class {
+    BackgroundColor #F0F5F9
+    BorderColor #78909C
+    FontColor #334455
+    AttributeFontColor #546E7A
+    FontSize 12
 }
+
+skinparam package {
+    BackgroundColor #ECEFF1
+    BorderColor #B0BEC5
+    FontColor #455A64
+}
+
+skinparam enum {
+    BackgroundColor #E1F5FE
+    BorderColor #81D4FA
+}
+
+skinparam arrow {
+    Color #78909C
+    FontColor #546E7A
+}
+' --- BLUEGRAY STYLE END ---
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
 
 ' ==========================================
 ' 2. MODELS & REAKTIVE STATES
@@ -27,23 +46,24 @@ package "Domain Models" {
       + {static} createInitial(String name, String email): void
       + save(): Future<void>
     }
-    
+
     class Tour {
       + id: String
       + title: String
       + userWaypoints: List<LatLng>
       + routePoints: List<LatLng>
       + distance: double
-      + syncStatus: SyncStatus
+      ' Berechnet die Route (Nutzt intern den RoutingService)
+      + Future<void> calculateRoute(): void
     }
-    
+
     enum NavMode {
       IDLE
       TRACKING
       OFF_ROUTE
       ARRIVED
     }
-    
+
     enum SyncStatus {
       LOCAL
       SYNCING
@@ -71,20 +91,20 @@ package "Presentation Layer" {
     class LoginScreen extends StatefulWidget {
        + createState(): _LoginScreenState
    }
-   
-   class _LoginScreenState extends State<LoginScreen>{
-    - nameController: TextEditingController 
-    - emailController TextEditingController 
+
+   class _LoginScreenState extends State{
+    - nameController: TextEditingController
+    - emailController TextEditingController
     + onRegisterPressed(): void
     + initState(): void
     + build(context: BuildContext): Widget
    }
-   
+
    class HomeScreen extends StatefulWidget{
      + createState(): _HomeScreenState
    }
-  
-  class _HomeScreenState extends State<HomeScreen>{
+
+  class _HomeScreenState extends State{
     - _activeTab: HomeScreenTab
     + build(context: BuildContext): Widget
     + changeTab(tab: HomeScreenTab): void
@@ -93,7 +113,7 @@ package "Presentation Layer" {
   class ProfilScreen extends StatefulWidget {
     + createState(): _ProfilScreenState
   }
-  class _ProfilScreenState extends State<ProfilScreen>{
+  class _ProfilScreenState extends State{
     -_userProfil: UserProfil
     -_loadProfil(): void
     + initState(): void
@@ -104,10 +124,15 @@ package "Presentation Layer" {
     + initialTour: Tour?
     + createState(): _TourPlanerScreenState
   }
-  
-  class _TourPlanerScreenState extends State<TourPlanerScreen>{
+
+  class _TourPlanerScreenState extends State{
     - _waypoints: List<LatLng>
-    - isSaving: bool
+    ' Wird vom Karten-Widget aufgerufen
+    - _onMapTap(pos: LatLng): void
+    ' Entfernt den letzten Punkt
+    + undoLastPoint(): void
+    ' Schickt die Tour ans Repository
+    + saveTour(): void
     + initState(): void
     + build(context: BuildContext): Widget
   }
@@ -117,8 +142,8 @@ package "Presentation Layer" {
     + build(context: BuildContext): Widget
     + createState(): _ArchivScreenState
   }
-  
-  class _TourScreenState extends State<TourScreen>{
+
+  class _TourScreenState extends State{
     - _currentFilter: TourFilter?
     - _plannedTours: List<Tour>?
     - _doneTours: List<Tour>?
@@ -134,8 +159,8 @@ package "Presentation Layer" {
     + initialTour: Tour?
     + createState(): _NavigationScreenState
   }
-  
-  class _NavigationScreenState extends State<NavigationScreen>{
+
+  class _NavigationScreenState extends State{
   -  _currentProgress: double
   --
   + startTour(t: Tour): void
@@ -154,11 +179,12 @@ class NavigationProvider <<Singleton>> <<ChangeNotifier>> extends ChangeNotifier
   - _currentPos : LatLng [0..1]
   - _mode : NavMode = IDLE
   - _directionHint : String [0..1]
-  - _isActive : Boolean = false 
+  - _isActive : Boolean = false
   ' Aktive Tour Beziehung wird grafisch dargestellt
   --
   ' Konstruktor
   - NavigationProvider()
+  + {static} getInstance(): NavigationProvider
   --
   ' Getter (Read-Only Zugriff für UI)
   + getCurrentPos() : LatLng?
@@ -169,11 +195,13 @@ class NavigationProvider <<Singleton>> <<ChangeNotifier>> extends ChangeNotifier
   ' Logik-Methoden
   + startNavigation(t : Tour): void
   + startTracking(): void
+  + pause(): void
+  + resume(): void
   + stop(): void
   - _handlePositionUpdate(): void
   ' Interner Callback für Stream
   - _updatePosition(pos : LatLng): void
-+ {static} void destroyInstance()
+  + {static} void destroyInstance()
 }
 }
 
@@ -190,28 +218,39 @@ package "Infrastructure & Data" {
         + getPlannedToursCount(): Future<int>
         + getDoneToursCount(): Future<int>
         ' Listen-Methoden
-        + loadTours(filter: TourFilter): Future<List<Tour>>
+        + loadTour(filter: TourFilter): Future<List<Tour>>
         ' Speicher-Methoden
         + saveTour(t: Tour): Future<void>
         + deleteTour(id: String): Future<void>
     }
-    
+
     class LocalDatabase{
         + saveUser(user: UserProfile): void
         + fetchUser(): UserProfile?
         + clear(): void
     }
-    
+
     class RemoteApi{
     }
-    
+
     class GPSService {
-        ' Liefert die Rohdaten vom Chip
-        + getPositionStream(): Stream<LatLng>
+        - _distanceFilter: int = 10 ' Meter
+        - _accuracy: LocationAccuracy = high
+        - _subscription: StreamSubscription?
+        --
+        ' Startet den Hardware-Zugriff
+        + startUpdates(): void
+        ' Pausiert/Resume den Stream (Akkuschonend)
+        + pauseUpdates(): void
+        + resumeUpdates(): void
+        ' Killt den Stream komplett
+        + stopUpdates(): void
         ' Prüft, ob GPS überhaupt an ist
         + isGPSEnabled(): Future<bool>
         ' Wichtig für deine Background-Anforderung
         + enableBackgroundLocation(bool enable): void
+        ' Das Interface für den Provider
+        + getPositionStream(): Stream<LatLng>
     }
 }
 
@@ -251,20 +290,21 @@ AppRepository "1" *-- "0..1" UserProfile : "aktueller User"
 _ProfilScreenState ..> AppRepository : <<use>>
 _TourScreenState ..> AppRepository : <<use>>
 _TourPlanerScreenState ..> AppRepository : <<use>>
-_TourScreenState "1" --> "0..*" Tour: zeigt an > 
+_TourScreenState "1" --> "0..*" Tour: zeigt an >
 
 ' Navigation & Hardware
 NavigationProvider "1" *-- "1" GPSService : nutzt >
 NavigationProvider "1" o-- "0..1" Tour : _activeTour
-_NavigationScreenState ..> NavigationProvider : <<use / observe>>
+_NavigationScreenState .down.> NavigationProvider : <<use / observe>>
 
 ' Enums als Datentypen
 Tour "1" o-- "1" SyncStatus
 NavigationProvider "1" o-- "1" NavMode
-_DownloadScreenState "1" o-- "1" DownloadStatus
 
 ' Daten-Infrastruktur
 AppRepository "1" *-- "1" LocalDatabase : persistiert >
 AppRepository "1" o-- "1" RemoteApi : synchronisiert >
 AppRepository "1" --> "0..*" Tour : verwaltet >
+
+
 @enduml
