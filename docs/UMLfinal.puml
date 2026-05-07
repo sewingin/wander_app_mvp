@@ -135,7 +135,7 @@ package "Presentation Layer" {
     + createState(): _NavigationScreenState
   }
   
-  class _NavigationScreenState extends NavigationScreen{
+  class _NavigationScreenState extends State<NavigationScreen>{
   -  _currentProgress: double
   --
   + startTour(t: Tour): void
@@ -251,7 +251,7 @@ AppRepository "1" *-- "0..1" UserProfile : "aktueller User"
 _ProfilScreenState ..> AppRepository : <<use>>
 _TourScreenState ..> AppRepository : <<use>>
 _TourPlanerScreenState ..> AppRepository : <<use>>
-_TourScreenState "1" --> "0..*" Tour: navigiert > 
+_TourScreenState "1" --> "0..*" Tour: zeigt an > 
 
 ' Navigation & Hardware
 NavigationProvider "1" *-- "1" GPSService : nutzt >
@@ -267,6 +267,4 @@ _DownloadScreenState "1" o-- "1" DownloadStatus
 AppRepository "1" *-- "1" LocalDatabase : persistiert >
 AppRepository "1" o-- "1" RemoteApi : synchronisiert >
 AppRepository "1" --> "0..*" Tour : verwaltet >
-
 @enduml
-}
