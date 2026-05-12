@@ -94,7 +94,7 @@ package "Presentation Layer" {
 
    class _LoginScreenState extends State{
     - nameController: TextEditingController
-    - emailController TextEditingController
+    - emailController: TextEditingController
     + onRegisterPressed(): void
     + initState(): void
     + build(context: BuildContext): Widget
@@ -203,6 +203,20 @@ class NavigationProvider <<Singleton>> <<ChangeNotifier>> extends ChangeNotifier
   - _updatePosition(pos : LatLng): void
   + {static} void destroyInstance()
 }
+class PlatformService <<Singleton>> {
+        ' Prüft: Windows, macOS, Linux?
+        + bool isDesktop()
+        ' Prüft: Genug Platz/Power für Planetiler?
+        + bool canGenerateMaps()
+    }
+
+    class MapGeneratorService <<Singleton>> {
+        - _isProcessing: bool
+        --
+        ' Führt den Java-Befehl lokal aus (nur PC)
+        + Future<File> generatePackage(BoundingBox box)
+        + getProgress(): Stream<double>
+    }
 }
 
 ' --- INFRASTRUCTURE / DATA ---
@@ -251,6 +265,10 @@ package "Infrastructure & Data" {
         + enableBackgroundLocation(bool enable): void
         ' Das Interface für den Provider
         + getPositionStream(): Stream<LatLng>
+    }
+    class RemoteMapApi {
+        ' Holt fertige Pakete von deiner Cloud (für Mobile)
+        + Future<File> downloadPackage(String regionId)
     }
 }
 
@@ -307,4 +325,10 @@ AppRepository "1" o-- "1" RemoteApi : synchronisiert >
 AppRepository "1" --> "0..*" Tour : verwaltet >
 
 
+
+' Der HomeScreen nutzt den PlatformService für die UI-Steuerung
+_HomeScreenState ..> PlatformService : <<use>>
+' Der Generator wird nur gerufen, wenn PlatformService OK gibt
+_HomeScreenState ..> MapGeneratorService : <<use>>
+AppRepository "1" o-- "1" RemoteMapApi : "nutzt für Cloud-Downloads"
 @enduml
